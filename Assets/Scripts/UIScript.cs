@@ -40,8 +40,9 @@ namespace Platformer
 
         public void RestartPressed()
         {
-            SceneManager.LoadScene("GameScene");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             Time.timeScale = 1;
         }
     }
+
 }

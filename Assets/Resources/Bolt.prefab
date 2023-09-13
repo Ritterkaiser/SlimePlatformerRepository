@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7789404023552827539}
   - component: {fileID: 7812273333183621336}
   - component: {fileID: 9164004928604030948}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Bolt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -116,7 +116,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1870206091451530461}
   - component: {fileID: 9170809158803365342}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}

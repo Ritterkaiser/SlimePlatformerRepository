@@ -15,13 +15,20 @@ namespace Platformer
         [SerializeField] private int _lives = 75;
         [SerializeField] private float _jumpForce = 6f;
         [SerializeField] private int _jumpTimes = 0;
+        [Space]
 
         [SerializeField] private Transform _firePointRight;
         [SerializeField] private Transform _firePointLeft;
         [SerializeField] private GameObject _PlayerBolt;
+        [SerializeField] private GameObject _BoltReadyText;
         [SerializeField] private float _startTimeBetweenShots;
         float _timeBetweenShots;
         private bool _canShoot;
+        [SerializeField] private GameObject _JumpAttackReadyText;
+        [SerializeField] private float _startTimeBetweenLunges;
+        float _timeBetweenLunges;
+        private bool _canJumpAttack;
+        [Space]
 
         private bool _isGrounded = false;
         public bool _isFliped = false;
@@ -29,24 +36,32 @@ namespace Platformer
         public bool _isRecharged = true;
         public bool _isBlocking = false;
         public bool _isJumpAttacking = false;
+        [Space]
 
         public Transform attackPosition;
         public float attackRange;
         public LayerMask enemy;
         public LayerMask Level;
+        [Space]
 
         [SerializeField] private AudioSource _jumpSound;
         [SerializeField] private AudioSource _attackSound;
         [SerializeField] private AudioSource _keySound;
         [SerializeField] private AudioSource _gemSound;
         [SerializeField] private AudioSource _chestSound;
+        [Space]
 
         [SerializeField] private GameObject _losePanel;
+        [SerializeField] private GameObject _BlockPanel;
+        [SerializeField] private GameObject _BoltPanel;
+        [SerializeField] private GameObject _JumpAttackPanel;
+        [Space]
 
         private Rigidbody2D rigidbody;
         private Animator animator;
         private SpriteRenderer sprite;
 
+        public GameObject NeedAKeyText;
         public bool _greenKeyCollected = false;
         public bool _yellowKeyCollected = false;
         public bool _blackKeyCollected = false;
@@ -83,7 +98,14 @@ namespace Platformer
         }
         private void Update()
         {
-            
+            if (_canShoot)
+                _BoltReadyText.SetActive(true);
+            else
+                _BoltReadyText.SetActive(false);
+            if (_canJumpAttack)
+                _JumpAttackReadyText.SetActive(true);
+            else
+                _JumpAttackReadyText.SetActive(false);
                 
             if (_isGrounded && !_isAttacking && !_isBlocking && !_isJumpAttacking)
                 states = States.Idle;
@@ -95,9 +117,22 @@ namespace Platformer
             {
                 Attack();
 
-                if (!_isGrounded && !_isJumpAttacking && _yellowChestOpened)
+                if (!_isGrounded && !_isJumpAttacking && _yellowChestOpened && _canJumpAttack)
+                {
                     JumpAttack();
+                    _timeBetweenLunges = _startTimeBetweenLunges;
+                }
             }
+            if (_timeBetweenLunges < 0)
+            {
+                _canJumpAttack = true;
+            }
+            else
+            {
+                _timeBetweenLunges -= Time.deltaTime;
+                _canJumpAttack = false;
+            }
+
             if (Input.GetKeyDown("l") && _canShoot && !_isBlocking && !_isAttacking && _greenChestOpened)
             {
                 if (_isFliped)
@@ -229,6 +264,16 @@ namespace Platformer
                 StartCoroutine(EnemyAttacked(colliders[i]));
             }
         }
+
+        private void OnKill()
+        {
+            Collider2D[] colliders = Physics2D.OverlapCircleAll(attackPosition.position, attackRange, enemy);
+
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                colliders[i].GetComponent<Entity>().Die();
+            }
+        }
         private IEnumerator AttackAnimation()
         {
             yield return new WaitForSeconds(0.45f);
@@ -287,11 +332,13 @@ namespace Platformer
             {
                 _greenChestOpened = true;
                 _chestSound.Play();
+                _BoltPanel.SetActive(true);
             }
             if (collision.gameObject.tag == "YellowChest" && _yellowKeyCollected && !_yellowChestOpened)
             {
                 _yellowChestOpened = true;
                 _chestSound.Play();
+                _JumpAttackPanel.SetActive(true);
             }
             if (collision.gameObject.tag == "BlackChest" && _blackKeyCollected && !_blackChestOpened)
             {
@@ -302,8 +349,16 @@ namespace Platformer
             {
                 _redChestOpened = true;
                 _chestSound.Play();
+                _BlockPanel.SetActive(true);
             }
 
+            if ((collision.gameObject.tag == "GreenChest" && !_greenKeyCollected && !_greenChestOpened) ||
+                (collision.gameObject.tag == "YellowChest" && !_yellowKeyCollected && !_yellowChestOpened) ||
+                (collision.gameObject.tag == "BlackChest" && !_blackKeyCollected && !_blackChestOpened) ||
+                (collision.gameObject.tag == "RedChest" && !_redKeyCollected && !_redChestOpened))
+                NeedAKeyText.SetActive(true);
+            else
+                NeedAKeyText.SetActive(false);
         }
     }
 
